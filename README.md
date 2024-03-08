@@ -2,7 +2,7 @@
 
 This is a [Heroku buildpack](http://devcenter.heroku.com/articles/buildpacks) to run mongo commands (http://www.mongodb.org/).
 
-It installs MongoDB 7.0 for Ubuntu 20.04 from [https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1604-4.2.3.tgz](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu2004-7.0.0.tgz) 
+It installs MongoDB 7.0 for Ubuntu 20.04 from [https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu2004-7.0.0.tgz](https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu2004-7.0.0.tgz) 
 
 Usage
 -----
