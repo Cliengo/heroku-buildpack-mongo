@@ -16,10 +16,10 @@ heroku_dir=$build_dir/.heroku
 mkdir -p $heroku_dir/mongo
 warnings=$(mktemp)
 
-mongo_version="7.0"  # Cambiar la versión a la versión de MongoDB 7
+mongo_version="7.0.0" 
 # Install mongodb to use mongo commands
 echo "-----> Downloading and installing mongodb version ${mongo_version}..."
-[[ $STACK = "heroku-20" ]] && os_id="ubuntu2004" || os_id="ubuntu2204"
+[[ $STACK = "heroku-22" ]] && os_id="ubuntu2204" || os_id="ubuntu2204"
 
 file_name="mongodb-linux-x86_64-${os_id}-${mongo_version}.tgz"  # Ajustar el nombre del archivo según la versión
 folder_name=`echo "$file_name" | sed 's/\.tgz$//'`
