@@ -2,10 +2,9 @@
 
 ####### Configure environment
 
-set -o errexit    # always exit on error
-set -o pipefail   # don't ignore exit codes when piping output
-set -o posix      # more strict failures in subshells
-# set -x          # enable debugging
+set -o errexit
+set -o pipefail
+set -o posix
 
 # Configure directories
 build_dir=$1
@@ -14,22 +13,32 @@ env_dir=$3
 bp_dir=$(cd $(dirname $0); cd ..; pwd)
 heroku_dir=$build_dir/.heroku
 mkdir -p $heroku_dir/mongo
+mkdir -p $build_dir/.profile.d
 warnings=$(mktemp)
 
-mongo_version="7.0.0" 
-# Install mongodb to use mongo commands
-echo "-----> Downloading and installing mongodb version ${mongo_version}..."
-[[ $STACK = "heroku-24" ]] && os_id="ubuntu2404" || os_id="ubuntu2404"
+# MongoDB
+mongo_version="7.0.0"
+mongo_os="ubuntu2004"
+mongo_file="mongodb-linux-x86_64-${mongo_os}-${mongo_version}.tgz"
+mongo_folder="mongodb-linux-x86_64-${mongo_os}-${mongo_version}"
+mongo_url="https://fastdl.mongodb.org/linux/${mongo_file}"
 
-file_name="mongodb-linux-x86_64-ubuntu2004-${mongo_version}.tgz"  # Ajustar el nombre del archivo según la versión
-folder_name=`echo "$file_name" | sed 's/\.tgz$//'`
-download_url="https://fastdl.mongodb.org/linux/${file_name}"
-curl $download_url -s -o - | tar xzf - -C /tmp
+echo "-----> Downloading and installing MongoDB ${mongo_version}..."
+curl -sL "${mongo_url}" | tar xz -C /tmp
+mv "/tmp/${mongo_folder}"/* "$heroku_dir/mongo"
+chmod +x "$heroku_dir/mongo/bin/"*
 
-# Move mongodb binaries into the app directory
-mv "/tmp/${folder_name}"/* $heroku_dir/mongo
-chmod +x $heroku_dir/mongo/bin/*
+# OpenSSL 1.1 (needed by mongod)
+openssl_version="1.1.1w"
+openssl_url="https://www.openssl.org/source/openssl-${openssl_version}.tar.gz"
+echo "-----> Downloading and installing OpenSSL ${openssl_version}..."
+curl -sL "${openssl_url}" | tar xz -C /tmp
+cd /tmp/openssl-${openssl_version}
+./config --prefix="$heroku_dir/openssl-1.1" --openssldir="$heroku_dir/openssl-1.1" shared
+make -j$(nproc)
+make install_sw
 
+# Runtime environment
 echo "-----> Creating runtime environment"
-mkdir -p $build_dir/.profile.d
-echo "export PATH=\"\$HOME/.heroku/mongo/bin:\$PATH\"" > $build_dir/.profile.d/mongo.sh
+echo "export PATH=\"\$HOME/.heroku/mongo/bin:\$PATH\"" > "$build_dir/.profile.d/mongo.sh"
+echo "export LD_LIBRARY_PATH=\"\$HOME/.heroku/openssl-1.1/lib:\$LD_LIBRARY_PATH\"" >> "$build_dir/.profile.d/mongo.sh"
